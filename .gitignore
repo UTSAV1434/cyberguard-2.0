@@ -1,0 +1,19 @@
+# Environment secrets
+.env
+
+# Mock databases & state files
+notion_database_mock.json
+audit_log.json
+firewall_state.json
+
+# Test directories
+test_scratch/
+test_api_scratch/
+
+# Python caching
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.unittest_cache/

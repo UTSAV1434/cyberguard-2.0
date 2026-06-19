@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberGuard AI - Security Console</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="glow-bg"></div>
+    
+    <div class="container">
+        <!-- Header -->
+        <header class="main-header glass">
+            <div class="logo-area">
+                <div class="cyber-badge">🛡️</div>
+                <div>
+                    <h1>CYBERGUARD <span class="accent-text">AI</span></h1>
+                    <p class="tagline">Intelligent Incident Detection & Response</p>
+                </div>
+            </div>
+            <div class="system-status glass-inner">
+                <span class="status-pulse" id="statusPulse"></span>
+                <span class="status-label" id="statusLabel">CONNECTING...</span>
+            </div>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card glass hover-card">
+                <div class="stat-icon alert-icon">🚨</div>
+                <div class="stat-content">
+                    <h3 id="statTotalIncidents">0</h3>
+                    <p>Total Security Incidents</p>
+                </div>
+            </div>
+            <div class="stat-card glass hover-card">
+                <div class="stat-icon block-icon">🚫</div>
+                <div class="stat-content">
+                    <h3 id="statBlockedIps">0</h3>
+                    <p>IP Addresses Blocked</p>
+                </div>
+            </div>
+            <div class="stat-card glass hover-card">
+                <div class="stat-icon review-icon">⚠️</div>
+                <div class="stat-content">
+                    <h3 id="statEscalations">0</h3>
+                    <p>Pending Human Review</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Layout -->
+        <div class="dashboard-layout">
+            <!-- Left Side: Controls & Firewall State -->
+            <div class="sidebar-layout">
+                <!-- Action Card -->
+                <div class="panel glass">
+                    <h2>Console Controls</h2>
+                    <div class="panel-body">
+                        <p class="panel-desc">Simulate authentications fail logs to test AI brute-force classification, ArmorClaw scans, and ArmorIQ policy checks.</p>
+                        <button id="btnRunSimulation" class="btn btn-primary btn-glow">
+                            <span class="btn-icon">⚡</span> Run Threat Simulation
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Active Blocklist -->
+                <div class="panel glass">
+                    <h2>Active Firewall Blocks</h2>
+                    <div class="panel-body block-panel">
+                        <div class="blocklist" id="blockedIpsList">
+                            <div class="empty-state">No IP addresses blocked in firewall.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Incident Feed -->
+            <div class="main-panel panel glass">
+                <div class="panel-header">
+                    <h2>Incident Activity Logs</h2>
+                    <span class="badge badge-info" id="incidentsCount">0 Incidents</span>
+                </div>
+                <div class="table-container">
+                    <table class="cyber-table">
+                        <thead>
+                            <tr>
+                                <th>Incident ID</th>
+                                <th>Timestamp</th>
+                                <th>IP Address</th>
+                                <th>Threat Classification</th>
+                                <th>Risk Score</th>
+                                <th>Severity</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="incidentsTableBody">
+                            <tr>
+                                <td colspan="8" class="empty-table-state">
+                                    <div class="loader-container">
+                                        <div class="loader"></div>
+                                        <p>Fetching incident feed...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+
+    <!-- Incident Detail Modal -->
+    <div id="modalDetail" class="modal-backdrop">
+        <div class="modal glass">
+            <div class="modal-header">
+                <h3>Incident Details & Investigation Report</h3>
+                <button class="modal-close" onclick="closeModal('modalDetail')">&times;</button>
+            </div>
+            <div class="modal-body scrollable">
+                <div class="modal-sec-grid">
+                    <div class="meta-block card glass-inner">
+                        <h4>Incident Metadata</h4>
+                        <div class="meta-row"><strong>ID:</strong> <span id="mdId" class="code"></span></div>
+                        <div class="meta-row"><strong>IP Address:</strong> <span id="mdIp" class="code"></span></div>
+                        <div class="meta-row"><strong>Severity:</strong> <span id="mdSeverity" class="badge"></span></div>
+                        <div class="meta-row"><strong>Risk Score:</strong> <span id="mdRisk" class="code"></span></div>
+                        <div class="meta-row"><strong>Current Status:</strong> <span id="mdStatus" class="badge"></span></div>
+                        <div class="meta-row"><strong>Action Taken:</strong> <span id="mdAction" class="code"></span></div>
+                    </div>
+                    
+                    <div class="meta-block card glass-inner">
+                        <h4>Integrations Status</h4>
+                        <div class="meta-row"><strong>ArmorClaw Scan:</strong> <span id="mdClaw" class="code"></span></div>
+                        <div class="meta-row"><strong>ArmorIQ Policy:</strong> <span id="mdIQ" class="code"></span></div>
+                    </div>
+                </div>
+
+                <div class="modal-section">
+                    <h4>AI Security Copilot Explanation</h4>
+                    <p class="copilot-explanation" id="mdExplanation"></p>
+                </div>
+
+                <div class="modal-sec-grid">
+                    <div class="modal-section">
+                        <h4>Security Audit Timeline</h4>
+                        <div class="timeline-visual" id="mdTimeline"></div>
+                    </div>
+                    <div class="modal-section">
+                        <h4>Compliance Document</h4>
+                        <pre class="compliance-box code" id="mdCompliance"></pre>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('modalDetail')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reversal / Rollback Modal -->
+    <div id="modalRollback" class="modal-backdrop">
+        <div class="modal modal-small glass">
+            <div class="modal-header">
+                <h3>↩️ Undo Firewall Block Action</h3>
+                <button class="modal-close" onclick="closeModal('modalRollback')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>You are requesting a rollback to unblock IP address <strong id="rollbackIpAddress" class="accent-text"></strong>.</p>
+                <p>This request will be evaluated against ArmorIQ default rollback policies. Please select or write a reason for audit logging:</p>
+                
+                <div class="form-group">
+                    <label for="rollbackReasonSelect">Select Reason:</label>
+                    <select id="rollbackReasonSelect" class="form-control" onchange="toggleCustomReason()">
+                        <option value="False Positive">False Positive (Forgotten Password/typo confirmed)</option>
+                        <option value="Legitimate Access Approval">Authorized testing / Developer login</option>
+                        <option value="IP Changed User">IP lease rotated to legitimate user</option>
+                        <option value="custom">Other / Custom Reason...</option>
+                    </select>
+                </div>
+
+                <div class="form-group hidden" id="customReasonGroup">
+                    <label for="rollbackReasonText">Custom Reason Details:</label>
+                    <textarea id="rollbackReasonText" class="form-control" placeholder="Enter explanation for unblocking this IP..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('modalRollback')">Cancel</button>
+                <button id="btnConfirmRollback" class="btn btn-danger btn-glow">Confirm Unblock (Undo)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
