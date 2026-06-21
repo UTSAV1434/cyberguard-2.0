@@ -33,7 +33,7 @@ class IncidentService:
     def _init_firewall_state(self):
         if not os.path.exists(self.firewall_state_path):
             with open(self.firewall_state_path, "w") as f:
-                json.dump({"blocked_ips": []}, f, indent=4)
+                json.dump({"blocked_ips": ["198.51.100.99"]}, f, indent=4)
 
     def _get_blocked_ips(self) -> Set[str]:
         try:

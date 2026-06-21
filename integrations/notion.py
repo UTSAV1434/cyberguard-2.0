@@ -25,10 +25,60 @@ class NotionClient:
             self._init_mock_db()
 
     def _init_mock_db(self):
-        """Initializes the mock JSON database if it doesn't exist."""
+        """Initializes the mock JSON database if it doesn't exist with initial realistic security incidents."""
         if not os.path.exists(self.mock_db_path):
+            initial_data = {
+                "inc-001": {
+                    "Incident ID": "inc-001",
+                    "Timestamp": "2026-10-24T09:12:00Z",
+                    "IP Address": "198.51.100.99",
+                    "Threat Type": "Brute Force Attack",
+                    "Risk Score": 95,
+                    "Severity": "Critical",
+                    "Recommended Action": "Block IP",
+                    "ArmorClaw Result": '{"reputation": "High", "verified": true, "details": "Known malicious scanner."}',
+                    "ArmorIQ Decision": '{"approved": true, "policy_name": "CriticalThreatAutoBlock"}',
+                    "Executed Action": "Block IP",
+                    "Status": "Action Executed",
+                    "Timeline": "[2026-10-24T09:12:00Z] Threat Detected: Brute force attempts exceeding threshold.\n[2026-10-24T09:12:05Z] Scan Completed: ArmorClaw verified IP risk.\n[2026-10-24T09:12:10Z] IP Blocked: Firewall rule applied.",
+                    "Compliance Report": "# SECURITY COMPLIANCE REPORT\n**Incident ID:** inc-001\n**IP Address:** 198.51.100.99\n**Status:** Action Executed\n**Severity:** Critical\n\nAutomated block executed successfully according to standard containment guidelines.",
+                    "Last Updated": "2026-10-24T09:12:10Z"
+                },
+                "inc-002": {
+                    "Incident ID": "inc-002",
+                    "Timestamp": "2026-10-25T14:30:00Z",
+                    "IP Address": "203.0.113.15",
+                    "Threat Type": "Port Scan Activity",
+                    "Risk Score": 70,
+                    "Severity": "High",
+                    "Recommended Action": "Require Human Approval",
+                    "ArmorClaw Result": '{"reputation": "Medium", "verified": false, "details": "Suspicious scan patterns."}',
+                    "ArmorIQ Decision": '{"approved": false, "policy_name": "HighRiskHumanEscalation"}',
+                    "Executed Action": "None",
+                    "Status": "Pending Approval",
+                    "Timeline": "[2026-10-25T14:30:00Z] Threat Detected: Scan burst on ports 22, 80, 443.\n[2026-10-25T14:30:05Z] Policy Requested: Escalated for human oversight.",
+                    "Compliance Report": "# SECURITY COMPLIANCE REPORT\n**Incident ID:** inc-002\n**IP Address:** 203.0.113.15\n**Status:** Pending Approval\n\nEscalated to SOC Queue. Action pending manual analysis.",
+                    "Last Updated": "2026-10-25T14:30:05Z"
+                },
+                "inc-003": {
+                    "Incident ID": "inc-003",
+                    "Timestamp": "2026-10-28T16:45:00Z",
+                    "IP Address": "192.0.2.55",
+                    "Threat Type": "Credential Stuffing",
+                    "Risk Score": 45,
+                    "Severity": "Medium",
+                    "Recommended Action": "Monitor Activity",
+                    "ArmorClaw Result": '{"reputation": "Low", "verified": false, "details": "Occasional login errors."}',
+                    "ArmorIQ Decision": '{"approved": false, "policy_name": "LowRiskContinuousMonitoring"}',
+                    "Executed Action": "None",
+                    "Status": "Resolved",
+                    "Timeline": "[2026-10-28T16:45:00Z] Threat Detected: 3 failed attempts followed by success.\n[2026-10-28T16:45:05Z] Threat Resolved: Valid login completed.",
+                    "Compliance Report": "# SECURITY COMPLIANCE REPORT\n**Incident ID:** inc-003\n**IP Address:** 192.0.2.55\n**Status:** Resolved\n\nMarked as False Positive. Threat dismissed.",
+                    "Last Updated": "2026-10-28T16:45:05Z"
+                }
+            }
             with open(self.mock_db_path, "w") as f:
-                json.dump({}, f, indent=4)
+                json.dump(initial_data, f, indent=4)
 
     def _read_mock_db(self) -> Dict[str, Any]:
         if not os.path.exists(self.mock_db_path):

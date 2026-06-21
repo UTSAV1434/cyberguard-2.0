@@ -9,6 +9,7 @@ let selectedIncidentId = null;
 let activeTab = 'overview';
 let activeMonth = 9; // October (0-indexed base: 9 represents October)
 let activeYear = 2026;
+let selectedDay = 28; // Default active selected day in calendar widget
 let proActive = false;
 
 // Checklist Tasks
@@ -24,6 +25,14 @@ let chatMessages = [
     { sender: 'bot', text: "Hello! I am Sapphire Security Copilot. I can analyze auth failures, review logs, and explain policies. How can I help you today?" }
 ];
 
+// Notification Alerts
+let notificationsList = [
+    { id: 1, text: "Critical brute-force automatically blocked on IP 198.51.100.99", time: "1 hour ago", icon: "🚫" },
+    { id: 2, text: "ArmorIQ Escalated high-risk Port Scan to manual SOC approval", time: "2 hours ago", icon: "⚠️" },
+    { id: 3, text: "ArmorClaw verified credentials stuffing reputational feed", time: "3 hours ago", icon: "🔍" }
+];
+let dismissedNotifications = [];
+
 // Undo Manager State (Globally records last actions per feature category)
 let lastActions = {
     upgrade: null,
@@ -31,7 +40,8 @@ let lastActions = {
     settings: null,
     todo: null,
     chat: null,
-    clearLogs: null
+    clearLogs: null,
+    notifications: null
 };
 
 // Document Ready
@@ -40,17 +50,21 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initApp() {
+    // Apply saved preferences at startup
+    const savedTheme = localStorage.getItem("theme_mode") || "sapphire";
+    applyThemeVariables(savedTheme);
+
     // Refresh Dashboard Data
     refreshDashboard();
     
     // Auto-refresh state based on preferred settings
     setupInterval();
 
-    // Render static components
+    // Render components
     renderCalendar();
-    renderHeatmap();
     renderTodoList();
     renderChatMessages();
+    updateNotificationsBadge();
 }
 
 let dashboardInterval = null;
@@ -86,6 +100,7 @@ async function refreshDashboard() {
             fetchAuditLogs()
         ]);
         calculateStats();
+        renderCalendarActivities();
     } catch (error) {
         console.error("Dashboard refresh failed:", error);
     }
@@ -140,7 +155,7 @@ async function runSimulation() {
         if (response.ok && data.success) {
             showToast(data.message, "success");
             await refreshDashboard();
-            renderHeatmap(); // Redraw heatmap showing threat spikes
+            renderHeatmap(); 
         } else {
             showToast("Simulation execution failed.", "error");
         }
@@ -150,7 +165,7 @@ async function runSimulation() {
 }
 
 function triggerRollback(incidentId, ipAddress, event) {
-    if (event) event.stopPropagation(); // Stop opening the details modal
+    if (event) event.stopPropagation(); // Avoid triggering row clicks
     selectedIncidentId = incidentId;
     document.getElementById("rollbackIpAddress").innerText = ipAddress;
     document.getElementById("rollbackReasonSelect").value = "False Positive";
@@ -159,7 +174,6 @@ function triggerRollback(incidentId, ipAddress, event) {
     openModal("modalRollback");
 }
 
-// Global confirm rollback handler (linked in html modal)
 document.getElementById("btnConfirmRollback").onclick = async function() {
     const reasonSelect = document.getElementById("rollbackReasonSelect").value;
     let reason = reasonSelect;
@@ -201,7 +215,6 @@ document.getElementById("btnConfirmRollback").onclick = async function() {
 async function viewIncidentDetail(incidentId) {
     openModal("modalDetail");
     
-    // Set loading elements
     document.getElementById("mdId").innerText = incidentId;
     document.getElementById("mdIp").innerText = "Loading...";
     document.getElementById("mdSeverity").innerText = "Loading...";
@@ -255,14 +268,12 @@ async function viewIncidentDetail(incidentId) {
 function switchTab(tabId) {
     activeTab = tabId;
     
-    // Toggle active classes in nav
     document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
         item.classList.remove('active');
     });
     const targetNav = document.getElementById(`nav-${tabId}`);
     if (targetNav) targetNav.classList.add('active');
 
-    // Toggle active panes
     document.querySelectorAll('.tab-pane').forEach(pane => {
         pane.classList.remove('active');
     });
@@ -287,7 +298,6 @@ function updateStatusIndicator() {
 }
 
 function calculateStats() {
-    // Total count stats
     document.getElementById("ovTotalIncidents").innerText = incidents.length;
     document.getElementById("ovBlockedIps").innerText = blockedIps.length;
     document.getElementById("incidentsCount").innerText = `${incidents.length} Incident${incidents.length === 1 ? '' : 's'}`;
@@ -296,7 +306,6 @@ function calculateStats() {
     document.getElementById("ovEscalations").innerText = escalationsCount;
     document.getElementById("ovAuditLogs").innerText = auditLogs.length;
 
-    // Trend simulation
     document.getElementById("ovBlockedIpsTrend").innerText = `+${blockedIps.length * 20}% from last week`;
 }
 
@@ -490,7 +499,6 @@ function renderFirewallTab() {
 }
 
 function triggerManualUnblock(ip) {
-    // Unblocks a manually added IP address
     const idx = blockedIps.indexOf(ip);
     if (idx > -1) {
         lastActions.manualBlock = { action: 'delete', ip: ip };
@@ -512,7 +520,6 @@ function addManualBlock() {
         return;
     }
     
-    // Simple IP address regex check
     const ipRegex = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/;
     if (!ipRegex.test(ip)) {
         showToast("Invalid IP address format.", "error");
@@ -524,7 +531,6 @@ function addManualBlock() {
         return;
     }
 
-    // Save Undo Action
     lastActions.manualBlock = { action: 'add', ip: ip };
     document.getElementById("btnUndoManualBlock").classList.remove("hidden");
 
@@ -550,7 +556,6 @@ function undoManualBlock() {
         showToast(`Undo complete: Re-applied block on IP ${last.ip}.`, "info");
     }
 
-    // Hide Undo Button
     lastActions.manualBlock = null;
     document.getElementById("btnUndoManualBlock").classList.add("hidden");
     
@@ -570,7 +575,6 @@ function renderAuditLogsTab() {
 
     tbody.innerHTML = "";
     
-    // Sort audit logs by timestamp descending
     const sortedLogs = [...auditLogs].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
     sortedLogs.forEach(log => {
@@ -591,7 +595,6 @@ function renderAuditLogsTab() {
 function clearAuditLogPrompt() {
     if (auditLogs.length === 0) return;
     
-    // Record Undo Action
     lastActions.clearLogs = [...auditLogs];
     document.getElementById("btnUndoClearLogs").classList.remove("hidden");
 
@@ -623,23 +626,31 @@ function renderCalendar() {
 
     container.innerHTML = "";
     
-    // Generate 6 sample days for the widget matching the image
     const daysName = ["Thu", "Fri", "Sat", "Sun", "Mon", "Tue"];
     const startDayNum = 24; // October 24
 
     for (let i = 0; i < 6; i++) {
+        const dayNum = startDayNum + i;
         const cell = document.createElement("div");
         cell.className = "cal-day-cell";
         
-        // Active mark for the current day index
-        if (i === 4) cell.classList.add("active"); // Mon Oct 28 active
+        if (dayNum === selectedDay) cell.classList.add("active");
 
         cell.innerHTML = `
             <span class="day">${daysName[i]}</span>
-            <span class="num">${startDayNum + i}</span>
+            <span class="num">${dayNum}</span>
         `;
+        
+        cell.onclick = () => {
+            selectedDay = dayNum;
+            document.querySelectorAll('.cal-day-cell').forEach(c => c.classList.remove('active'));
+            cell.classList.add('active');
+            renderCalendarActivities();
+        };
+
         container.appendChild(cell);
     }
+    renderCalendarActivities();
 }
 
 function adjustCalendarMonth(dir) {
@@ -649,21 +660,97 @@ function adjustCalendarMonth(dir) {
     renderCalendar();
 }
 
+function renderCalendarActivities() {
+    const list = document.getElementById("calendarActivitiesList");
+    if (!list) return;
+    
+    list.innerHTML = "";
+    
+    // Filter incidents/audit logs corresponding to selectedDay
+    const targetDateStr = `${activeYear}-${String(activeMonth + 1).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
+    
+    const dayIncidents = incidents.filter(inc => {
+        const ts = inc.timestamp || inc["Timestamp"];
+        return ts && ts.startsWith(targetDateStr);
+    });
+
+    const dayLogs = auditLogs.filter(log => {
+        const ts = log.timestamp;
+        return ts && ts.startsWith(targetDateStr);
+    });
+
+    if (dayIncidents.length === 0 && dayLogs.length === 0) {
+        list.innerHTML = `
+            <div class="activity-item">
+                <div class="activity-dot bg-cyan"></div>
+                <div class="activity-details">
+                    <h4>Continuous Monitoring</h4>
+                    <p>No threats detected. Firewall nodes active.</p>
+                    <span class="activity-time">00:00 AM - 11:59 PM</span>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    dayIncidents.forEach(inc => {
+        const item = document.createElement("div");
+        item.className = "activity-item";
+        const dotColor = (inc.severity || inc["Severity"]) === "Critical" ? "bg-critical" : "bg-high";
+        const ts = inc.timestamp || inc["Timestamp"];
+        
+        item.innerHTML = `
+            <div class="activity-dot ${dotColor}"></div>
+            <div class="activity-details">
+                <h4>${inc.threat_type || inc["Threat Type"]}</h4>
+                <p>Status: ${inc.status || inc["Status"]} | IP: ${inc.ip_address || inc["IP Address"]}</p>
+                <span class="activity-time">${formatTimeOnly(ts)}</span>
+            </div>
+        `;
+        list.appendChild(item);
+    });
+
+    dayLogs.forEach(log => {
+        const item = document.createElement("div");
+        item.className = "activity-item";
+        
+        item.innerHTML = `
+            <div class="activity-dot bg-purple"></div>
+            <div class="activity-details">
+                <h4>${log.event_type}</h4>
+                <p>${log.description}</p>
+                <span class="activity-time">${formatTimeOnly(log.timestamp)}</span>
+            </div>
+        `;
+        list.appendChild(item);
+    });
+}
+
+function formatTimeOnly(dateStr) {
+    if (!dateStr) return "";
+    try {
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return dateStr;
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+        return dateStr;
+    }
+}
+
 // --- Render Weekly Threat Activity Heatmap Grid ---
 
 function renderHeatmap() {
     const grid = document.getElementById("threatHeatmapGrid");
+    if (!grid) return;
     grid.innerHTML = "";
 
-    // 24 columns representing hours, 4 rows representing regions/days
     const cellsTotal = 96;
     for (let i = 0; i < cellsTotal; i++) {
         const cell = document.createElement("div");
         
-        // Simulated weights: higher chance of threat spike (hm-4) near mid-day
         let weight = Math.floor(Math.random() * 4);
-        if (i % 8 === 0 && Math.random() > 0.5) weight = 4; // periodic spikes
-        if (incidents.length > 0 && Math.random() > 0.8) weight = Math.max(weight, 3); // scale with live incidents
+        if (i % 8 === 0 && Math.random() > 0.5) weight = 4;
+        if (incidents.length > 0 && Math.random() > 0.8) weight = Math.max(weight, 3);
 
         cell.className = `heatmap-cell hm-${weight}`;
         cell.title = `Hour ${Math.floor(i / 4)}:00 | Event Density: ${weight === 4 ? 'CRITICAL' : weight === 3 ? 'HIGH' : weight === 2 ? 'MEDIUM' : weight === 1 ? 'LOW' : 'NONE'}`;
@@ -680,6 +767,7 @@ function renderHeatmap() {
 
 function renderTodoList() {
     const container = document.getElementById("todoListContainer");
+    if (!container) return;
     container.innerHTML = "";
 
     if (todoList.length === 0) {
@@ -703,7 +791,6 @@ function renderTodoList() {
 function toggleTodo(id) {
     const todo = todoList.find(t => t.id === id);
     if (todo) {
-        // Record Undo Action
         lastActions.todo = { action: 'toggle', id: id, previousState: todo.completed };
         document.getElementById("btnUndoTodoAction").classList.remove("hidden");
 
@@ -716,7 +803,6 @@ function toggleTodo(id) {
 function deleteTodo(id) {
     const idx = todoList.findIndex(t => t.id === id);
     if (idx > -1) {
-        // Record Undo Action
         lastActions.todo = { action: 'delete', todo: todoList[idx], index: idx };
         document.getElementById("btnUndoTodoAction").classList.remove("hidden");
 
@@ -737,7 +823,6 @@ function addTodoItem() {
         completed: false
     };
 
-    // Record Undo Action
     lastActions.todo = { action: 'add', id: newTodo.id };
     document.getElementById("btnUndoTodoAction").classList.remove("hidden");
 
@@ -765,7 +850,6 @@ function undoTodoAction() {
         }
     }
 
-    // Hide Undo Button
     lastActions.todo = null;
     document.getElementById("btnUndoTodoAction").classList.add("hidden");
     renderTodoList();
@@ -775,6 +859,7 @@ function undoTodoAction() {
 
 function renderChatMessages() {
     const box = document.getElementById("chatBoxContainer");
+    if (!box) return;
     box.innerHTML = "";
 
     chatMessages.forEach(msg => {
@@ -790,7 +875,6 @@ function renderChatMessages() {
         box.appendChild(bubble);
     });
 
-    // Scroll to bottom
     box.scrollTop = box.scrollHeight;
 }
 
@@ -798,7 +882,6 @@ function sendChatPrompt(promptText) {
     chatMessages.push({ sender: 'user', text: promptText });
     renderChatMessages();
 
-    // Trigger loading bot response
     setTimeout(() => {
         let responseText = "I have scanned the policy parameters. ";
         if (promptText.toLowerCase().includes("incident")) {
@@ -826,7 +909,6 @@ function submitChatPrompt() {
 function clearChat() {
     if (chatMessages.length === 0) return;
 
-    // Record Undo Action
     lastActions.chat = [...chatMessages];
     document.getElementById("btnUndoChatClear").classList.remove("hidden");
 
@@ -852,7 +934,6 @@ function upgradePrompt() {
     const btn = document.querySelector(".btn-upgrade");
     const undoBtn = document.getElementById("btnUndoUpgrade");
 
-    // Record Undo Action
     lastActions.upgrade = { active: proActive };
     undoBtn.classList.remove("hidden");
 
@@ -874,44 +955,61 @@ function undoUpgrade() {
     btn.innerText = "Upgrade to Pro";
     btn.disabled = false;
 
-    // Hide Undo Button
     lastActions.upgrade = null;
     undoBtn.classList.add("hidden");
 
     showToast("Upgrade reverted. Node scope limited to trial.", "info");
 }
 
-// --- Search Filter Operations ---
+// --- Global Search Filter Operations ---
 
 function handleGlobalSearch() {
     const searchVal = document.getElementById("globalSearch").value.toLowerCase().trim();
+    
+    // 1. Filter incidents table (Console tab)
     const rows = document.querySelectorAll("#incidentsTableBody tr");
-
     rows.forEach(row => {
-        // Skip empty table states
         if (row.cells.length < 8) return;
+        const text = row.innerText.toLowerCase();
+        if (text.includes(searchVal)) row.classList.remove("hidden");
+        else row.classList.add("hidden");
+    });
 
-        const id = row.cells[0].innerText.toLowerCase();
-        const ip = row.cells[2].innerText.toLowerCase();
-        const threat = row.cells[3].innerText.toLowerCase();
+    // 2. Filter firewall block list rows (Firewall tab)
+    const firewallRows = document.querySelectorAll("#firewallTableBody tr");
+    firewallRows.forEach(row => {
+        if (row.cells.length < 4) return;
+        const text = row.innerText.toLowerCase();
+        if (text.includes(searchVal)) row.classList.remove("hidden");
+        else row.classList.add("hidden");
+    });
 
-        if (id.includes(searchVal) || ip.includes(searchVal) || threat.includes(searchVal)) {
-            row.classList.remove("hidden");
-        } else {
-            row.classList.add("hidden");
-        }
+    // 3. Filter audit log rows (Audit tab)
+    const auditRows = document.querySelectorAll("#auditLogsTableBody tr");
+    auditRows.forEach(row => {
+        if (row.cells.length < 5) return;
+        const text = row.innerText.toLowerCase();
+        if (text.includes(searchVal)) row.classList.remove("hidden");
+        else row.classList.add("hidden");
+    });
+
+    // 4. Filter calendar activities list (Overview tab)
+    const activityItems = document.querySelectorAll("#calendarActivitiesList .activity-item");
+    activityItems.forEach(item => {
+        const text = item.innerText.toLowerCase();
+        if (text.includes(searchVal)) item.classList.remove("hidden");
+        else item.classList.add("hidden");
     });
 }
 
 function changeTimeRange() {
     const range = document.getElementById("timeRangeSelect").value;
-    showToast(`Time Range filter updated to: ${range.toUpperCase()}. Visual metrics updated.`, "info");
+    showToast(`Time Range filter updated to: ${range.toUpperCase()}.`, "info");
 }
 
 // --- Settings & Modal UI triggers ---
 
 function showSettings() {
-    // Sync current select settings
     document.getElementById("themeSelect").value = localStorage.getItem("theme_mode") || "sapphire";
     document.getElementById("refreshSelect").value = localStorage.getItem("refresh_interval") || "30000";
     openModal("modalSettings");
@@ -919,9 +1017,6 @@ function showSettings() {
 
 function updateThemePreference() {
     const theme = document.getElementById("themeSelect").value;
-    const root = document.documentElement;
-
-    // Record Undo Action
     lastActions.settings = { theme: localStorage.getItem("theme_mode") || "sapphire" };
     document.getElementById("btnUndoSettings").classList.remove("hidden");
 
@@ -941,7 +1036,6 @@ function applyThemeVariables(theme) {
         root.style.setProperty("--accent-violet", "#a855f7");
         root.style.setProperty("--glow-purple", "0 0 20px rgba(168, 85, 247, 0.4)");
     } else {
-        // Default Sapphire
         root.style.setProperty("--accent-purple", "#8b5cf6");
         root.style.setProperty("--accent-violet", "#a855f7");
         root.style.setProperty("--glow-purple", "0 0 20px rgba(168, 85, 247, 0.4)");
@@ -965,6 +1059,149 @@ function undoSettings() {
         lastActions.settings = null;
         document.getElementById("btnUndoSettings").classList.add("hidden");
         showToast("Settings reverted successfully.", "info");
+    }
+}
+
+// --- Notifications Popover Operations ---
+
+function toggleNotifications() {
+    // Create notifications dropdown dynamically if not present
+    let popover = document.getElementById("notificationsPopover");
+    if (popover) {
+        popover.remove();
+        return;
+    }
+
+    popover = document.createElement("div");
+    popover.id = "notificationsPopover";
+    popover.className = "panel glass notifications-popover";
+    
+    // Absolute position underneath the bell button
+    const bellBtn = document.querySelector(".badge-btn");
+    const rect = bellBtn.getBoundingClientRect();
+    
+    popover.style.position = "absolute";
+    popover.style.top = `${rect.bottom + window.scrollY + 10}px`;
+    popover.style.right = `${window.innerWidth - rect.right - window.scrollX}px`;
+    popover.style.width = "320px";
+    popover.style.zIndex = "1000";
+    
+    renderNotificationsInPopover(popover);
+    document.body.appendChild(popover);
+
+    // Close when clicking outside
+    const closeHandler = (e) => {
+        if (!popover.contains(e.target) && !bellBtn.contains(e.target)) {
+            popover.remove();
+            document.removeEventListener("click", closeHandler);
+        }
+    };
+    // Wait a tick to prevent closing immediately from this click event
+    setTimeout(() => {
+        document.addEventListener("click", closeHandler);
+    }, 10);
+}
+
+function renderNotificationsInPopover(popover) {
+    popover.innerHTML = `
+        <div class="popover-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:10px; margin-bottom:12px;">
+            <h4 style="font-size:13px; font-weight:700;">System Alerts</h4>
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-secondary btn-small" id="btnUndoNotification" style="padding:4px 8px; font-size:10px; display:none;" onclick="undoDismissNotification(event)">Undo</button>
+                <button class="btn btn-secondary btn-small" style="padding:4px 8px; font-size:10px;" onclick="clearAllNotifications(event)">Clear All</button>
+            </div>
+        </div>
+        <div class="popover-body" style="display:flex; flex-direction:column; gap:10px; max-height:240px; overflow-y:auto;">
+            ${notificationsList.length === 0 ? '<div class="empty-state" style="padding:10px 0;">No active notifications.</div>' : ''}
+        </div>
+    `;
+
+    // Check if undo button should be visible
+    const undoBtn = popover.querySelector("#btnUndoNotification");
+    if (lastActions.notifications && undoBtn) {
+        undoBtn.style.display = "block";
+    }
+
+    const body = popover.querySelector(".popover-body");
+    notificationsList.forEach(n => {
+        const item = document.createElement("div");
+        item.style.display = "flex";
+        item.style.gap = "10px";
+        item.style.alignItems = "flex-start";
+        item.style.padding = "8px";
+        item.style.background = "rgba(255,255,255,0.02)";
+        item.style.border = "1px solid rgba(255,255,255,0.04)";
+        item.style.borderRadius = "8px";
+        
+        item.innerHTML = `
+            <span style="font-size:16px;">${n.icon}</span>
+            <div style="flex:1;">
+                <p style="font-size:11px; font-weight:500; line-height:1.3;">${n.text}</p>
+                <span style="font-size:9px; color:var(--text-muted); display:block; margin-top:2px;">${n.time}</span>
+            </div>
+            <button style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:14px;" onclick="dismissNotification(${n.id}, event)">&times;</button>
+        `;
+        body.appendChild(item);
+    });
+}
+
+function dismissNotification(id, event) {
+    if (event) event.stopPropagation();
+    const idx = notificationsList.findIndex(n => n.id === id);
+    if (idx > -1) {
+        lastActions.notifications = { action: 'dismiss', note: notificationsList[idx], index: idx };
+        notificationsList.splice(idx, 1);
+        
+        updateNotificationsBadge();
+        showToast("Notification dismissed.", "info");
+        
+        const popover = document.getElementById("notificationsPopover");
+        if (popover) renderNotificationsInPopover(popover);
+    }
+}
+
+function clearAllNotifications(event) {
+    if (event) event.stopPropagation();
+    if (notificationsList.length === 0) return;
+
+    lastActions.notifications = { action: 'clear', list: [...notificationsList] };
+    notificationsList = [];
+    
+    updateNotificationsBadge();
+    showToast("All notifications cleared.", "info");
+    
+    const popover = document.getElementById("notificationsPopover");
+    if (popover) renderNotificationsInPopover(popover);
+}
+
+function undoDismissNotification(event) {
+    if (event) event.stopPropagation();
+    const last = lastActions.notifications;
+    if (!last) return;
+
+    if (last.action === 'dismiss') {
+        notificationsList.splice(last.index, 0, last.note);
+        showToast("Undo complete: Notification restored.", "info");
+    } else if (last.action === 'clear') {
+        notificationsList = last.list;
+        showToast("Undo complete: All notifications restored.", "info");
+    }
+
+    lastActions.notifications = null;
+    updateNotificationsBadge();
+
+    const popover = document.getElementById("notificationsPopover");
+    if (popover) renderNotificationsInPopover(popover);
+}
+
+function updateNotificationsBadge() {
+    const badge = document.getElementById("notificationBadge");
+    if (!badge) return;
+    badge.innerText = notificationsList.length;
+    if (notificationsList.length === 0) {
+        badge.style.display = "none";
+    } else {
+        badge.style.display = "block";
     }
 }
 
