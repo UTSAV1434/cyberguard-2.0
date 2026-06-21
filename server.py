@@ -2,6 +2,9 @@ import os
 import sys
 import json
 import logging
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
@@ -222,7 +225,7 @@ def trigger_undo(incident_id: str, req: UndoRequest):
 @app.post("/api/simulation/run")
 def trigger_simulation():
     """Runs a simulated authentication log scan and applies automated block containment."""
-    log_path = os.path.join("c:/Users/utsav/OneDrive/Desktop/uodated hackathon/sample_logs", "auth_failures.json")
+    log_path = os.path.join(BASE_DIR, "sample_logs", "auth_failures.json")
     if not os.path.exists(log_path):
         raise HTTPException(status_code=404, detail="Simulated logs file sample_logs/auth_failures.json not found.")
         
@@ -278,14 +281,14 @@ def get_audit_logs():
 # --- Serve Single Page App Dashboard ---
 
 # Serve app static directory
-os.makedirs("c:/Users/utsav/OneDrive/Desktop/uodated hackathon/static", exist_ok=True)
-app.mount("/static", StaticFiles(directory="c:/Users/utsav/OneDrive/Desktop/uodated hackathon/static"), name="static")
+os.makedirs(os.path.join(BASE_DIR, "static"), exist_ok=True)
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 
 # Catch-all endpoint to serve the UI SPA
 @app.get("/{full_path:path}", response_class=HTMLResponse)
 def serve_index_page(full_path: str):
     """Serves the index page for all non-API paths."""
-    index_file = os.path.join("c:/Users/utsav/OneDrive/Desktop/uodated hackathon/static", "index.html")
+    index_file = os.path.join(BASE_DIR, "static", "index.html")
     if os.path.exists(index_file):
         return FileResponse(index_file)
     return HTMLResponse(

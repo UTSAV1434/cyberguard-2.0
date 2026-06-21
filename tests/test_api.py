@@ -9,7 +9,8 @@ from server import app, notion_client, incident_service, audit_service
 class TestCyberGuardAPI(unittest.TestCase):
     def setUp(self):
         # Override paths for test isolation
-        self.test_dir = os.path.join("c:/Users/utsav/OneDrive/Desktop/uodated hackathon", "test_api_scratch")
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.test_dir = os.path.join(base_dir, "test_api_scratch")
         os.makedirs(self.test_dir, exist_ok=True)
         
         self.mock_db_path = os.path.join(self.test_dir, "notion_database_api_test.json")

@@ -17,7 +17,8 @@ from agents.rollback_agent import RollbackAgent
 class TestCyberGuard(unittest.TestCase):
     def setUp(self):
         # Setup temporary directories and path overrides for isolated testing
-        self.test_dir = os.path.join("c:/Users/utsav/OneDrive/Desktop/uodated hackathon", "test_scratch")
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.test_dir = os.path.join(base_dir, "test_scratch")
         os.makedirs(self.test_dir, exist_ok=True)
         
         self.mock_db_path = os.path.join(self.test_dir, "notion_database_test.json")

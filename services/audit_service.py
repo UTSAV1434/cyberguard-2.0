@@ -9,9 +9,11 @@ logger = logging.getLogger(__name__)
 
 class AuditService:
     def __init__(self):
-        self.audit_log_path = os.path.join(
-            "c:/Users/utsav/OneDrive/Desktop/uodated hackathon", "audit_log.json"
-        )
+        if os.environ.get("VERCEL"):
+            self.audit_log_path = "/tmp/audit_log.json"
+        else:
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            self.audit_log_path = os.path.join(base_dir, "audit_log.json")
         self._init_log()
 
     def _init_log(self):

@@ -16,9 +16,11 @@ class NotionClient:
         if self.token and self.database_id and os.getenv("MOCK_MODE", "True").lower() != "true":
             self.mock_mode = False
             
-        self.mock_db_path = os.path.join(
-            "c:/Users/utsav/OneDrive/Desktop/uodated hackathon", "notion_database_mock.json"
-        )
+        if os.environ.get("VERCEL"):
+            self.mock_db_path = "/tmp/notion_database_mock.json"
+        else:
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            self.mock_db_path = os.path.join(base_dir, "notion_database_mock.json")
         if self.mock_mode:
             self._init_mock_db()
 

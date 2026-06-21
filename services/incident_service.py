@@ -23,9 +23,11 @@ class IncidentService:
         self.policy_service = policy_service
         self.armorclaw_client = armorclaw_client
         self.notion_client = notion_client
-        self.firewall_state_path = os.path.join(
-            "c:/Users/utsav/OneDrive/Desktop/uodated hackathon", "firewall_state.json"
-        )
+        if os.environ.get("VERCEL"):
+            self.firewall_state_path = "/tmp/firewall_state.json"
+        else:
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            self.firewall_state_path = os.path.join(base_dir, "firewall_state.json")
         self._init_firewall_state()
 
     def _init_firewall_state(self):
