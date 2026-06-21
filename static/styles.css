@@ -1558,3 +1558,115 @@ textarea.form-control {
 .chat-input-row button {
     width: auto !important;
 }
+
+/* Pricing Plans Modal Grid */
+.plans-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 16px;
+}
+
+.plan-card {
+    padding: 28px 24px;
+    border-radius: 16px;
+    text-align: center;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s;
+    height: 100%;
+}
+
+.plan-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.popular-plan {
+    border: 2px solid var(--accent-purple);
+    background: linear-gradient(180deg, rgba(139, 92, 246, 0.08) 0%, rgba(20, 28, 48, 0.5) 100%);
+    box-shadow: var(--glow-purple);
+}
+
+.popular-ribbon {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+    color: white;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 10px rgba(168, 85, 247, 0.3);
+}
+
+.plan-badge {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+}
+
+.plan-price {
+    font-size: 36px;
+    font-weight: 800;
+    margin: 16px 0 8px 0;
+    color: #ffffff;
+}
+
+.plan-price .period {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.plan-desc-short {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+.plan-benefits {
+    list-style: none;
+    text-align: left;
+    margin-bottom: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.plan-benefits li {
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.plan-benefits li span {
+    color: var(--status-success);
+    font-weight: 800;
+}
+
+.plan-benefits li.save-tag {
+    color: #c084fc;
+    font-weight: 600;
+    margin-top: 6px;
+    list-style: none;
+    display: block;
+    text-align: center;
+}
+
+/* Custom Popover Notification Placement */
+.notifications-popover {
+    border-radius: 12px;
+}
+

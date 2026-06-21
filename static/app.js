@@ -929,20 +929,25 @@ function undoChatClear() {
 
 // --- Upgrade pro operations ---
 
-function upgradePrompt() {
+function subscribePlan(planName, priceStr) {
     const card = document.querySelector(".upgrade-card");
     const btn = document.querySelector(".btn-upgrade");
     const undoBtn = document.getElementById("btnUndoUpgrade");
 
-    lastActions.upgrade = { active: proActive };
+    lastActions.upgrade = { 
+        active: proActive, 
+        planName: planName,
+        buttonText: btn.innerText
+    };
     undoBtn.classList.remove("hidden");
 
     proActive = true;
     card.classList.add("pro-active");
-    btn.innerText = "Active: Pro Plan";
+    btn.innerText = `Active: ${planName}`;
     btn.disabled = true;
 
-    showToast("Successfully upgraded to Sapphire Pro! Protection active for unlimited nodes.", "success");
+    closeModal("modalPlans");
+    showToast(`Successfully subscribed to ${planName} (${priceStr})! Protection active.`, "success");
 }
 
 function undoUpgrade() {
@@ -958,7 +963,7 @@ function undoUpgrade() {
     lastActions.upgrade = null;
     undoBtn.classList.add("hidden");
 
-    showToast("Upgrade reverted. Node scope limited to trial.", "info");
+    showToast("Subscription reverted. Node scope limited to trial.", "info");
 }
 
 // --- Global Search Filter Operations ---

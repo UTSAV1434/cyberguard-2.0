@@ -64,11 +64,11 @@
             </nav>
 
             <div class="sidebar-footer">
-                <div class="upgrade-card">
+                <div class="upgrade-card" style="cursor: pointer;" onclick="openModal('modalPlans')">
                     <h4>Sapphire Pro</h4>
                     <p>Secure unlimited nodes</p>
-                    <button class="btn btn-upgrade" onclick="upgradePrompt()">Upgrade to Pro</button>
-                    <button class="btn btn-undo-upgrade hidden" id="btnUndoUpgrade" onclick="undoUpgrade()">Undo Upgrade</button>
+                    <button class="btn btn-upgrade" onclick="event.stopPropagation(); openModal('modalPlans')">Upgrade to Pro</button>
+                    <button class="btn btn-undo-upgrade hidden" id="btnUndoUpgrade" onclick="event.stopPropagation(); undoUpgrade()">Undo Upgrade</button>
                 </div>
             </div>
         </aside>
@@ -556,6 +556,76 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('modalSettings')">Close</button>
                 <button class="btn btn-secondary hidden" id="btnUndoSettings" onclick="undoSettings()">↩️ Undo Settings Change</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subscription Plans Modal -->
+    <div id="modalPlans" class="modal-backdrop">
+        <div class="modal glass" style="max-width: 900px;">
+            <div class="modal-header">
+                <h3>💎 Choose Your Sapphire Protection Plan</h3>
+                <button class="modal-close" onclick="closeModal('modalPlans')">&times;</button>
+            </div>
+            <div class="modal-body scrollable">
+                <p class="panel-desc" style="text-align: center; margin-bottom: 24px;">Unlock advanced AI threat intelligence and secure unlimited firewall nodes.</p>
+                
+                <div class="plans-grid">
+                    <!-- Weekly Plan -->
+                    <div class="plan-card glass-inner">
+                        <div>
+                            <div class="plan-badge">Weekly Pass</div>
+                            <div class="plan-price">$9.99<span class="period">/ week</span></div>
+                            <p class="plan-desc-short">Ideal for short-term audits or threat testing.</p>
+                            <ul class="plan-benefits">
+                                <li><span>✓</span> Up to 10 Secured Nodes</li>
+                                <li><span>✓</span> ArmorClaw Scans (100 daily)</li>
+                                <li><span>✓</span> ArmorIQ Policy Controls</li>
+                                <li><span>✓</span> Local Mock DB Support</li>
+                            </ul>
+                        </div>
+                        <button class="btn btn-primary" onclick="subscribePlan('Weekly Pass', '$9.99/week')">Activate Weekly</button>
+                    </div>
+
+                    <!-- Monthly Plan -->
+                    <div class="plan-card glass-inner popular-plan">
+                        <div class="popular-ribbon">POPULAR</div>
+                        <div>
+                            <div class="plan-badge" style="color: #c084fc;">Monthly Pro</div>
+                            <div class="plan-price">$29.99<span class="period">/ month</span></div>
+                            <p class="plan-desc-short">Perfect for active deployment protection.</p>
+                            <ul class="plan-benefits">
+                                <li><span>✓</span> Up to 100 Secured Nodes</li>
+                                <li><span>✓</span> Unlimited Reputation Scans</li>
+                                <li><span>✓</span> ArmorIQ Policy Gating</li>
+                                <li><span>✓</span> Notion Database Sync</li>
+                                <li><span>✓</span> AI Security Copilot Chat</li>
+                            </ul>
+                        </div>
+                        <button class="btn btn-primary btn-glow" onclick="subscribePlan('Monthly Pro', '$29.99/month')">Activate Monthly</button>
+                    </div>
+
+                    <!-- Yearly Plan -->
+                    <div class="plan-card glass-inner">
+                        <div>
+                            <div class="plan-badge">Yearly Enterprise</div>
+                            <div class="plan-price">$249.99<span class="period">/ year</span></div>
+                            <p class="plan-desc-short">Complete compliance & long-term safety.</p>
+                            <ul class="plan-benefits">
+                                <li><span>✓</span> Unlimited Secured Nodes</li>
+                                <li><span>✓</span> Custom Policy Playbooks</li>
+                                <li><span>✓</span> Priority 24/7 SOC Support</li>
+                                <li><span>✓</span> Dedicated SOC Dashboard</li>
+                                <li><span>✓</span> Auto Compliance Reporting</li>
+                                <li class="save-tag">Save 30% annually!</li>
+                            </ul>
+                        </div>
+                        <button class="btn btn-primary" onclick="subscribePlan('Yearly Enterprise', '$249.99/year')">Activate Yearly</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('modalPlans')">Close</button>
             </div>
         </div>
     </div>
