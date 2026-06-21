@@ -3,118 +3,446 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberGuard AI - Security Console</title>
+    <title>CyberGuard AI - Security Management Center</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
     <!-- Styles -->
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
     <div class="glow-bg"></div>
     
-    <div class="container">
-        <!-- Header -->
-        <header class="main-header glass">
-            <div class="logo-area">
-                <div class="cyber-badge">🛡️</div>
-                <div>
-                    <h1>CYBERGUARD <span class="accent-text">AI</span></h1>
-                    <p class="tagline">Intelligent Incident Detection & Response</p>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-circle">🛡️</div>
+                <div class="logo-text">
+                    <h2>Sapphire SG</h2>
+                    <p>Security Guard AI</p>
                 </div>
             </div>
-            <div class="system-status glass-inner">
-                <span class="status-pulse" id="statusPulse"></span>
-                <span class="status-label" id="statusLabel">CONNECTING...</span>
-            </div>
-        </header>
-
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-            <div class="stat-card glass hover-card">
-                <div class="stat-icon alert-icon">🚨</div>
-                <div class="stat-content">
-                    <h3 id="statTotalIncidents">0</h3>
-                    <p>Total Security Incidents</p>
-                </div>
-            </div>
-            <div class="stat-card glass hover-card">
-                <div class="stat-icon block-icon">🚫</div>
-                <div class="stat-content">
-                    <h3 id="statBlockedIps">0</h3>
-                    <p>IP Addresses Blocked</p>
-                </div>
-            </div>
-            <div class="stat-card glass hover-card">
-                <div class="stat-icon review-icon">⚠️</div>
-                <div class="stat-content">
-                    <h3 id="statEscalations">0</h3>
-                    <p>Pending Human Review</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Dashboard Layout -->
-        <div class="dashboard-layout">
-            <!-- Left Side: Controls & Firewall State -->
-            <div class="sidebar-layout">
-                <!-- Action Card -->
-                <div class="panel glass">
-                    <h2>Console Controls</h2>
-                    <div class="panel-body">
-                        <p class="panel-desc">Simulate authentications fail logs to test AI brute-force classification, ArmorClaw scans, and ArmorIQ policy checks.</p>
-                        <button id="btnRunSimulation" class="btn btn-primary btn-glow">
-                            <span class="btn-icon">⚡</span> Run Threat Simulation
-                        </button>
-                    </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <h3>General</h3>
+                    <a href="#" class="nav-item active" id="nav-overview" onclick="switchTab('overview')">
+                        <span class="nav-icon">📊</span> Overview
+                    </a>
+                    <a href="#" class="nav-item" id="nav-console" onclick="switchTab('console')">
+                        <span class="nav-icon">🛡️</span> Security Console
+                    </a>
+                    <a href="#" class="nav-item" id="nav-firewall" onclick="switchTab('firewall')">
+                        <span class="nav-icon">🚫</span> Firewall Blocks
+                    </a>
+                    <a href="#" class="nav-item" id="nav-audit" onclick="switchTab('audit')">
+                        <span class="nav-icon">📃</span> Audit Logs
+                    </a>
                 </div>
 
-                <!-- Active Blocklist -->
-                <div class="panel glass">
-                    <h2>Active Firewall Blocks</h2>
-                    <div class="panel-body block-panel">
-                        <div class="blocklist" id="blockedIpsList">
-                            <div class="empty-state">No IP addresses blocked in firewall.</div>
+                <div class="nav-section">
+                    <h3>More</h3>
+                    <a href="#" class="nav-item" id="nav-todo" onclick="switchTab('todo')">
+                        <span class="nav-icon">📋</span> List Todo
+                    </a>
+                    <a href="#" class="nav-item" id="nav-ai" onclick="switchTab('ai')">
+                        <span class="nav-icon">✨</span> AI Assistants
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <h3>Live Status</h3>
+                    <div class="live-status-card">
+                        <div class="status-indicator">
+                            <span class="status-pulse" id="statusPulse"></span>
+                            <span class="status-label" id="statusLabel">CONNECTING...</span>
                         </div>
                     </div>
                 </div>
-            </div>
+            </nav>
 
-            <!-- Right Side: Incident Feed -->
-            <div class="main-panel panel glass">
-                <div class="panel-header">
-                    <h2>Incident Activity Logs</h2>
-                    <span class="badge badge-info" id="incidentsCount">0 Incidents</span>
-                </div>
-                <div class="table-container">
-                    <table class="cyber-table">
-                        <thead>
-                            <tr>
-                                <th>Incident ID</th>
-                                <th>Timestamp</th>
-                                <th>IP Address</th>
-                                <th>Threat Classification</th>
-                                <th>Risk Score</th>
-                                <th>Severity</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="incidentsTableBody">
-                            <tr>
-                                <td colspan="8" class="empty-table-state">
-                                    <div class="loader-container">
-                                        <div class="loader"></div>
-                                        <p>Fetching incident feed...</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div class="sidebar-footer">
+                <div class="upgrade-card">
+                    <h4>Sapphire Pro</h4>
+                    <p>Secure unlimited nodes</p>
+                    <button class="btn btn-upgrade" onclick="upgradePrompt()">Upgrade to Pro</button>
+                    <button class="btn btn-undo-upgrade hidden" id="btnUndoUpgrade" onclick="undoUpgrade()">Undo Upgrade</button>
                 </div>
             </div>
-        </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-container">
+            <!-- Top Header -->
+            <header class="topbar">
+                <div class="topbar-welcome">
+                    <h1 id="greetingText">Hi, Security Admin!</h1>
+                    <p>What security policy do you want to enforce today?</p>
+                </div>
+                
+                <div class="topbar-actions">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" placeholder="Search IP or Incident..." id="globalSearch" oninput="handleGlobalSearch()">
+                    </div>
+                    
+                    <div class="period-select">
+                        <span class="calendar-icon">📅</span>
+                        <select id="timeRangeSelect" onchange="changeTimeRange()">
+                            <option value="monthly">Monthly</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="daily">Daily</option>
+                        </select>
+                    </div>
+
+                    <button class="icon-btn" title="Settings" onclick="showSettings()">⚙️</button>
+                    <button class="icon-btn badge-btn" title="Notifications" onclick="toggleNotifications()">
+                        🔔<span class="btn-badge" id="notificationBadge">3</span>
+                    </button>
+                    
+                    <div class="profile-area">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100&h=100" alt="Admin Avatar" class="profile-pic">
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Panes -->
+            <div class="content-body">
+                
+                <!-- TAB 1: OVERVIEW -->
+                <section id="tab-pane-overview" class="tab-pane active">
+                    <!-- Top Row: Metric Summary / Hero / Timeline Calendar -->
+                    <div class="overview-grid">
+                        
+                        <!-- Card 1: Incidents Overview (Students Card) -->
+                        <div class="panel glass ov-metric-card">
+                            <div class="card-header">
+                                <div class="icon-badge bg-purple">🚨</div>
+                                <div>
+                                    <h3>Security Incidents</h3>
+                                    <h2 id="ovTotalIncidents">0</h2>
+                                    <p class="desc">Active and logged events</p>
+                                </div>
+                            </div>
+                            
+                            <div class="severity-bars">
+                                <div class="bar-row">
+                                    <span class="bar-label">Critical</span>
+                                    <div class="progress-container">
+                                        <div class="progress-bar bg-critical" id="barCritical" style="width: 0%"></div>
+                                    </div>
+                                    <span class="bar-value" id="valCritical">0%</span>
+                                </div>
+                                <div class="bar-row">
+                                    <span class="bar-label">High</span>
+                                    <div class="progress-container">
+                                        <div class="progress-bar bg-high" id="barHigh" style="width: 0%"></div>
+                                    </div>
+                                    <span class="bar-value" id="valHigh">0%</span>
+                                </div>
+                                <div class="bar-row">
+                                    <span class="bar-label">Medium/Low</span>
+                                    <div class="progress-container">
+                                        <div class="progress-bar bg-medium" id="barMedium" style="width: 0%"></div>
+                                    </div>
+                                    <span class="bar-value" id="valMedium">0%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Security Intelligence Hero -->
+                        <div class="panel glass ov-hero-card">
+                            <div class="hero-content">
+                                <h2>Security Intelligence</h2>
+                                <p>Empowering Threat Containment with Advanced AI Technology</p>
+                                <div class="hero-image-container">
+                                    <div class="glowing-orb"></div>
+                                    <div class="orb-scanner"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: Security Timeline Calendar (Mockup style Calendar) -->
+                        <div class="panel glass ov-calendar-card">
+                            <div class="calendar-header">
+                                <span class="arrow" onclick="adjustCalendarMonth(-1)">◀</span>
+                                <h3 id="calendarMonthTitle">October 2026</h3>
+                                <span class="arrow" onclick="adjustCalendarMonth(1)">▶</span>
+                            </div>
+                            
+                            <div class="calendar-days" id="calendarDaysRow">
+                                <!-- Generated Dynamically -->
+                            </div>
+
+                            <div class="calendar-activities" id="calendarActivitiesList">
+                                <!-- Activities List -->
+                                <div class="activity-item">
+                                    <div class="activity-dot bg-cyan"></div>
+                                    <div class="activity-details">
+                                        <h4>ArmorClaw Reputation Check</h4>
+                                        <p>Verification engine scanning active ports</p>
+                                        <span class="activity-time">09:00 AM</span>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <div class="activity-dot bg-purple"></div>
+                                    <div class="activity-details">
+                                        <h4>ArmorIQ Policy Evaluation</h4>
+                                        <p>Containment policy gating verified</p>
+                                        <span class="activity-time">10:45 AM</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="calendar-footer">
+                                <button class="btn btn-primary btn-glow btn-small" onclick="runSimulation()">
+                                    ⚡ Trigger Threat Simulation
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Row 2: Secondary Stats Row -->
+                    <div class="stats-cards-row">
+                        <div class="panel glass hover-card stat-item">
+                            <div class="stat-content">
+                                <div class="label">🚫 Blocked IPs</div>
+                                <div class="value" id="ovBlockedIps">0</div>
+                                <span class="trend trend-up" id="ovBlockedIpsTrend">+0% from last week</span>
+                            </div>
+                        </div>
+                        <div class="panel glass hover-card stat-item">
+                            <div class="stat-content">
+                                <div class="label">⚠️ Pending Review</div>
+                                <div class="value" id="ovEscalations">0</div>
+                                <span class="trend trend-down">Resolved cases active</span>
+                            </div>
+                        </div>
+                        <div class="panel glass hover-card stat-item">
+                            <div class="stat-content">
+                                <div class="label">📈 Compliance Score</div>
+                                <div class="value" id="ovCompliance">98%</div>
+                                <span class="trend trend-up">+1.2% from last week</span>
+                            </div>
+                        </div>
+                        <div class="panel glass hover-card stat-item">
+                            <div class="stat-content">
+                                <div class="label">🔍 Audit Events</div>
+                                <div class="value" id="ovAuditLogs">0</div>
+                                <span class="trend trend-up">Fully cataloged</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Heatmap Block Grid -->
+                    <div class="panel glass heatmap-panel">
+                        <div class="panel-header-row">
+                            <div>
+                                <h2>Weekly Threat Activity Grid</h2>
+                                <p class="desc">Detection density across recent hourly security feeds</p>
+                            </div>
+                            <div class="heatmap-legend">
+                                <span>Low</span>
+                                <div class="legend-color lv1"></div>
+                                <div class="legend-color lv2"></div>
+                                <div class="legend-color lv3"></div>
+                                <div class="legend-color lv4"></div>
+                                <span>High</span>
+                            </div>
+                        </div>
+                        
+                        <div class="heatmap-container" id="threatHeatmapGrid">
+                            <!-- Generated Dynamically -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 2: SECURITY CONSOLE (Current Dashboard) -->
+                <section id="tab-pane-console" class="tab-pane">
+                    <div class="console-grid">
+                        <div class="sidebar-layout">
+                            <!-- Action Card -->
+                            <div class="panel glass">
+                                <h2>Console Controls</h2>
+                                <div class="panel-body">
+                                    <p class="panel-desc">Simulate auth logs failure to verify detection, ArmorClaw check, and auto blocking policy.</p>
+                                    <button id="btnRunSimulation" class="btn btn-primary btn-glow" onclick="runSimulation()">
+                                        <span class="btn-icon">⚡</span> Run Threat Simulation
+                                    </button>
+                                </div>
+                            </div>
+            
+                            <!-- Active Blocklist -->
+                            <div class="panel glass">
+                                <h2>Active Firewall Blocks</h2>
+                                <div class="panel-body block-panel">
+                                    <div class="blocklist" id="blockedIpsList">
+                                        <div class="empty-state">No IP addresses blocked in firewall.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+            
+                        <!-- Right Side: Incident Feed -->
+                        <div class="main-panel panel glass">
+                            <div class="panel-header">
+                                <h2>Incident Activity Logs</h2>
+                                <span class="badge badge-info" id="incidentsCount">0 Incidents</span>
+                            </div>
+                            <div class="table-container">
+                                <table class="cyber-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Incident ID</th>
+                                            <th>Timestamp</th>
+                                            <th>IP Address</th>
+                                            <th>Threat Classification</th>
+                                            <th>Risk Score</th>
+                                            <th>Severity</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="incidentsTableBody">
+                                        <tr>
+                                            <td colspan="8" class="empty-table-state">
+                                                <div class="loader-container">
+                                                    <div class="loader"></div>
+                                                    <p>Fetching incident feed...</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 3: FIREWALL BLOCKS -->
+                <section id="tab-pane-firewall" class="tab-pane">
+                    <div class="panel glass">
+                        <div class="panel-header-row">
+                            <div>
+                                <h2>Firewall Control Center</h2>
+                                <p class="desc">Add or remove IP addresses from active network blocks. Manual actions are logged.</p>
+                            </div>
+                            <div class="action-row">
+                                <input type="text" id="manualBlockIp" placeholder="e.g. 198.51.100.42" class="form-control inline-input">
+                                <button class="btn btn-primary btn-small inline-btn" onclick="addManualBlock()">🚫 Block IP</button>
+                                <button class="btn btn-secondary btn-small inline-btn hidden" id="btnUndoManualBlock" onclick="undoManualBlock()">↩️ Undo Manual Block</button>
+                            </div>
+                        </div>
+
+                        <div class="table-container margin-top">
+                            <table class="cyber-table">
+                                <thead>
+                                    <tr>
+                                        <th>IP Address</th>
+                                        <th>Policy Scope</th>
+                                        <th>Block Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="firewallTableBody">
+                                    <tr>
+                                        <td colspan="4" class="empty-table-state">No IP addresses currently blocked.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 4: AUDIT LOGS -->
+                <section id="tab-pane-audit" class="tab-pane">
+                    <div class="panel glass">
+                        <div class="panel-header-row">
+                            <div>
+                                <h2>System Security Audit Trail</h2>
+                                <p class="desc">Chronological logs of scans, policy decisions, containment, and rollbacks.</p>
+                            </div>
+                            <button class="btn btn-secondary btn-small inline-btn" onclick="clearAuditLogPrompt()">🧹 Clear Logs (Mock)</button>
+                            <button class="btn btn-secondary btn-small inline-btn hidden" id="btnUndoClearLogs" onclick="undoClearLogs()">↩️ Undo Clear</button>
+                        </div>
+
+                        <div class="table-container margin-top">
+                            <table class="cyber-table">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Event Type</th>
+                                        <th>Incident ID</th>
+                                        <th>Status</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="auditLogsTableBody">
+                                    <tr>
+                                        <td colspan="5" class="empty-table-state">No audit logs found.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 5: TODO LIST (New Feature) -->
+                <section id="tab-pane-todo" class="tab-pane">
+                    <div class="panel glass">
+                        <div class="panel-header-row">
+                            <div>
+                                <h2>Security Checklist & Tasks</h2>
+                                <p class="desc">Keep track of operations required by system policies. Toggling items requires audit logs.</p>
+                            </div>
+                            <div class="action-row">
+                                <input type="text" id="newTodoText" placeholder="Add custom security task..." class="form-control inline-input">
+                                <button class="btn btn-primary btn-small inline-btn" onclick="addTodoItem()">➕ Add Task</button>
+                            </div>
+                        </div>
+
+                        <div class="todo-list-container margin-top" id="todoListContainer">
+                            <!-- Dynamically loaded -->
+                        </div>
+                        <div class="margin-top text-right">
+                            <button class="btn btn-secondary btn-small inline-btn hidden" id="btnUndoTodoAction" onclick="undoTodoAction()">↩️ Undo Last Checklist Action</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 6: AI ASSISTANT (New Feature) -->
+                <section id="tab-pane-ai" class="tab-pane">
+                    <div class="panel glass ai-chat-panel">
+                        <h2>Sapphire AI Security Assistant</h2>
+                        <p class="panel-desc">Ask Sapphire AI for explanations, incident details, or policy recommendations.</p>
+                        
+                        <div class="chat-box glass-inner" id="chatBoxContainer">
+                            <div class="chat-message bot">
+                                <div class="avatar">✨</div>
+                                <div class="message-content">
+                                    <p>Hello! I am Sapphire Security Copilot. I can analyze auth failures, review logs, and explain policies. How can I help you today?</p>
+                                    <div class="quick-prompts">
+                                        <button class="btn btn-secondary btn-small" onclick="sendChatPrompt('Explain the latest incident policy')">"Explain the latest incident policy"</button>
+                                        <button class="btn btn-secondary btn-small" onclick="sendChatPrompt('Show blocked IPs report')">"Show blocked IPs report"</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chat-input-row">
+                            <input type="text" id="chatInputText" placeholder="Ask Sapphire AI about threats or policy rollbacks..." class="form-control" onkeydown="if(event.key === 'Enter') submitChatPrompt()">
+                            <button class="btn btn-primary btn-glow btn-small" onclick="submitChatPrompt()">Send ✨</button>
+                            <button class="btn btn-secondary btn-small hidden" id="btnUndoChatClear" onclick="undoChatClear()" title="Undo Clear Chat">↩️ Undo</button>
+                            <button class="btn btn-secondary btn-small" onclick="clearChat()" title="Clear Chat History">🧹 Clear</button>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
     </div>
 
     <!-- Modals -->
@@ -196,6 +524,38 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('modalRollback')">Cancel</button>
                 <button id="btnConfirmRollback" class="btn btn-danger btn-glow">Confirm Unblock (Undo)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- General Purpose Custom Alert/Settings Modal -->
+    <div id="modalSettings" class="modal-backdrop">
+        <div class="modal modal-small glass">
+            <div class="modal-header">
+                <h3>Settings & Preferences</h3>
+                <button class="modal-close" onclick="closeModal('modalSettings')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Dashboard Theme Mode:</label>
+                    <select class="form-control" id="themeSelect" onchange="updateThemePreference()">
+                        <option value="sapphire">Vibrant Sapphire Dark (Recommended)</option>
+                        <option value="cyan">Neon Cyan Glow</option>
+                        <option value="amethyst">Deep Amethyst Purple</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Auto-refresh Interval:</label>
+                    <select class="form-control" id="refreshSelect" onchange="updateRefreshPreference()">
+                        <option value="30000">30 seconds (Default)</option>
+                        <option value="10000">10 seconds (Aggressive)</option>
+                        <option value="60000">60 seconds</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('modalSettings')">Close</button>
+                <button class="btn btn-secondary hidden" id="btnUndoSettings" onclick="undoSettings()">↩️ Undo Settings Change</button>
             </div>
         </div>
     </div>
