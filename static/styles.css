@@ -1670,3 +1670,32 @@ textarea.form-control {
     border-radius: 12px;
 }
 
+/* Active Plan Highlights */
+.plan-active-highlight {
+    border: 2px solid var(--status-success) !important;
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.3) !important;
+}
+
+.btn-active-plan {
+    background: var(--status-success) !important;
+    color: white !important;
+    cursor: not-allowed !important;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2) !important;
+    pointer-events: none !important;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Active status styling in sidebar upgrade card */
+.upgrade-card.pro-active .btn-upgrade {
+    background: linear-gradient(135deg, var(--status-success), var(--accent-cyan)) !important;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25) !important;
+    opacity: 1 !important;
+    pointer-events: none !important;
+    color: white !important;
+}
+

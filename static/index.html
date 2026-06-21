@@ -20,7 +20,7 @@
             <div class="sidebar-header">
                 <div class="logo-circle">🛡️</div>
                 <div class="logo-text">
-                    <h2>Sapphire SG</h2>
+                    <h2>CyberGuard SG</h2>
                     <p>Security Guard AI</p>
                 </div>
             </div>
@@ -65,7 +65,7 @@
 
             <div class="sidebar-footer">
                 <div class="upgrade-card" style="cursor: pointer;" onclick="openModal('modalPlans')">
-                    <h4>Sapphire Pro</h4>
+                    <h4>CyberGuard Pro</h4>
                     <p>Secure unlimited nodes</p>
                     <button class="btn btn-upgrade" onclick="event.stopPropagation(); openModal('modalPlans')">Upgrade to Pro</button>
                     <button class="btn btn-undo-upgrade hidden" id="btnUndoUpgrade" onclick="event.stopPropagation(); undoUpgrade()">Undo Upgrade</button>
@@ -416,14 +416,14 @@
                 <!-- TAB 6: AI ASSISTANT (New Feature) -->
                 <section id="tab-pane-ai" class="tab-pane">
                     <div class="panel glass ai-chat-panel">
-                        <h2>Sapphire AI Security Assistant</h2>
-                        <p class="panel-desc">Ask Sapphire AI for explanations, incident details, or policy recommendations.</p>
+                        <h2>CyberGuard AI Security Assistant</h2>
+                        <p class="panel-desc">Ask CyberGuard AI for explanations, incident details, or policy recommendations.</p>
                         
                         <div class="chat-box glass-inner" id="chatBoxContainer">
                             <div class="chat-message bot">
                                 <div class="avatar">✨</div>
                                 <div class="message-content">
-                                    <p>Hello! I am Sapphire Security Copilot. I can analyze auth failures, review logs, and explain policies. How can I help you today?</p>
+                                    <p>Hello! I am CyberGuard Security Copilot. I can analyze auth failures, review logs, and explain policies. How can I help you today?</p>
                                     <div class="quick-prompts">
                                         <button class="btn btn-secondary btn-small" onclick="sendChatPrompt('Explain the latest incident policy')">"Explain the latest incident policy"</button>
                                         <button class="btn btn-secondary btn-small" onclick="sendChatPrompt('Show blocked IPs report')">"Show blocked IPs report"</button>
@@ -431,9 +431,9 @@
                                 </div>
                             </div>
                         </div>
-
+ 
                         <div class="chat-input-row">
-                            <input type="text" id="chatInputText" placeholder="Ask Sapphire AI about threats or policy rollbacks..." class="form-control" onkeydown="if(event.key === 'Enter') submitChatPrompt()">
+                            <input type="text" id="chatInputText" placeholder="Ask CyberGuard AI about threats or policy rollbacks..." class="form-control" onkeydown="if(event.key === 'Enter') submitChatPrompt()">
                             <button class="btn btn-primary btn-glow btn-small" onclick="submitChatPrompt()">Send ✨</button>
                             <button class="btn btn-secondary btn-small hidden" id="btnUndoChatClear" onclick="undoChatClear()" title="Undo Clear Chat">↩️ Undo</button>
                             <button class="btn btn-secondary btn-small" onclick="clearChat()" title="Clear Chat History">🧹 Clear</button>
@@ -564,7 +564,7 @@
     <div id="modalPlans" class="modal-backdrop">
         <div class="modal glass" style="max-width: 900px;">
             <div class="modal-header">
-                <h3>💎 Choose Your Sapphire Protection Plan</h3>
+                <h3>💎 Choose Your CyberGuard Protection Plan</h3>
                 <button class="modal-close" onclick="closeModal('modalPlans')">&times;</button>
             </div>
             <div class="modal-body scrollable">
@@ -572,7 +572,7 @@
                 
                 <div class="plans-grid">
                     <!-- Weekly Plan -->
-                    <div class="plan-card glass-inner">
+                    <div class="plan-card glass-inner" id="plan-card-weekly">
                         <div>
                             <div class="plan-badge">Weekly Pass</div>
                             <div class="plan-price">$9.99<span class="period">/ week</span></div>
@@ -584,11 +584,11 @@
                                 <li><span>✓</span> Local Mock DB Support</li>
                             </ul>
                         </div>
-                        <button class="btn btn-primary" onclick="subscribePlan('Weekly Pass', '$9.99/week')">Activate Weekly</button>
+                        <button class="btn btn-primary" id="btn-plan-weekly" onclick="subscribePlan('Weekly Pass', '$9.99/week')">Activate Weekly</button>
                     </div>
 
                     <!-- Monthly Plan -->
-                    <div class="plan-card glass-inner popular-plan">
+                    <div class="plan-card glass-inner popular-plan" id="plan-card-monthly">
                         <div class="popular-ribbon">POPULAR</div>
                         <div>
                             <div class="plan-badge" style="color: #c084fc;">Monthly Pro</div>
@@ -602,11 +602,11 @@
                                 <li><span>✓</span> AI Security Copilot Chat</li>
                             </ul>
                         </div>
-                        <button class="btn btn-primary btn-glow" onclick="subscribePlan('Monthly Pro', '$29.99/month')">Activate Monthly</button>
+                        <button class="btn btn-primary btn-glow" id="btn-plan-monthly" onclick="subscribePlan('Monthly Pro', '$29.99/month')">Activate Monthly</button>
                     </div>
 
                     <!-- Yearly Plan -->
-                    <div class="plan-card glass-inner">
+                    <div class="plan-card glass-inner" id="plan-card-yearly">
                         <div>
                             <div class="plan-badge">Yearly Enterprise</div>
                             <div class="plan-price">$249.99<span class="period">/ year</span></div>
@@ -620,7 +620,7 @@
                                 <li class="save-tag">Save 30% annually!</li>
                             </ul>
                         </div>
-                        <button class="btn btn-primary" onclick="subscribePlan('Yearly Enterprise', '$249.99/year')">Activate Yearly</button>
+                        <button class="btn btn-primary" id="btn-plan-yearly" onclick="subscribePlan('Yearly Enterprise', '$249.99/year')">Activate Yearly</button>
                     </div>
                 </div>
             </div>

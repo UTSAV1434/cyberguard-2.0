@@ -22,7 +22,7 @@ let todoList = [
 
 // Chat History
 let chatMessages = [
-    { sender: 'bot', text: "Hello! I am Sapphire Security Copilot. I can analyze auth failures, review logs, and explain policies. How can I help you today?" }
+    { sender: 'bot', text: "Hello! I am CyberGuard Security Copilot. I can analyze auth failures, review logs, and explain policies. How can I help you today?" }
 ];
 
 // Notification Alerts
@@ -47,6 +47,7 @@ let lastActions = {
 // Document Ready
 document.addEventListener("DOMContentLoaded", () => {
     initApp();
+    setupModalsOutsideClick();
 });
 
 function initApp() {
@@ -65,6 +66,7 @@ function initApp() {
     renderTodoList();
     renderChatMessages();
     updateNotificationsBadge();
+    initActivePlan();
 }
 
 let dashboardInterval = null;
@@ -889,7 +891,7 @@ function sendChatPrompt(promptText) {
         } else if (promptText.toLowerCase().includes("block")) {
             responseText += `Firewall block active list contains ${blockedIps.length} target IPs. All manual unblock operations are securely tracked in the audit table.`;
         } else {
-            responseText += "Sapphire AI models recommend keeping mock mode active when testing custom policies on staging environments.";
+            responseText += "CyberGuard AI models recommend keeping mock mode active when testing custom policies on staging environments.";
         }
         
         chatMessages.push({ sender: 'bot', text: responseText });
@@ -929,6 +931,22 @@ function undoChatClear() {
 
 // --- Upgrade pro operations ---
 
+function initActivePlan() {
+    const activePlan = localStorage.getItem("active_plan");
+    if (activePlan) {
+        proActive = true;
+        const card = document.querySelector(".upgrade-card");
+        const btn = document.querySelector(".btn-upgrade");
+        const undoBtn = document.getElementById("btnUndoUpgrade");
+        if (card && btn && undoBtn) {
+            card.classList.add("pro-active");
+            btn.innerText = `Active: ${activePlan}`;
+            btn.disabled = true;
+            undoBtn.classList.remove("hidden");
+        }
+    }
+}
+
 function subscribePlan(planName, priceStr) {
     const card = document.querySelector(".upgrade-card");
     const btn = document.querySelector(".btn-upgrade");
@@ -946,6 +964,9 @@ function subscribePlan(planName, priceStr) {
     btn.innerText = `Active: ${planName}`;
     btn.disabled = true;
 
+    localStorage.setItem("active_plan", planName);
+    updatePlansModalUI();
+
     closeModal("modalPlans");
     showToast(`Successfully subscribed to ${planName} (${priceStr})! Protection active.`, "success");
 }
@@ -962,6 +983,9 @@ function undoUpgrade() {
 
     lastActions.upgrade = null;
     undoBtn.classList.add("hidden");
+
+    localStorage.removeItem("active_plan");
+    updatePlansModalUI();
 
     showToast("Subscription reverted. Node scope limited to trial.", "info");
 }
@@ -1214,10 +1238,58 @@ function updateNotificationsBadge() {
 
 function openModal(modalId) {
     document.getElementById(modalId).classList.add("active");
+    if (modalId === "modalPlans") {
+        updatePlansModalUI();
+    }
 }
 
 function closeModal(modalId) {
     document.getElementById(modalId).classList.remove("active");
+}
+
+function updatePlansModalUI() {
+    const activePlan = localStorage.getItem("active_plan");
+    
+    const planCards = {
+        "Weekly Pass": { card: "plan-card-weekly", btn: "btn-plan-weekly", defaultText: "Activate Weekly" },
+        "Monthly Pro": { card: "plan-card-monthly", btn: "btn-plan-monthly", defaultText: "Activate Monthly" },
+        "Yearly Enterprise": { card: "plan-card-yearly", btn: "btn-plan-yearly", defaultText: "Activate Yearly" }
+    };
+    
+    for (const [planName, refs] of Object.entries(planCards)) {
+        const cardEl = document.getElementById(refs.card);
+        const btnEl = document.getElementById(refs.btn);
+        
+        if (cardEl && btnEl) {
+            cardEl.classList.remove("plan-active-highlight");
+            btnEl.innerText = refs.defaultText;
+            btnEl.disabled = false;
+            btnEl.classList.remove("btn-active-plan");
+        }
+    }
+    
+    if (activePlan && planCards[activePlan]) {
+        const refs = planCards[activePlan];
+        const cardEl = document.getElementById(refs.card);
+        const btnEl = document.getElementById(refs.btn);
+        
+        if (cardEl && btnEl) {
+            cardEl.classList.add("plan-active-highlight");
+            btnEl.innerText = "Current Plan";
+            btnEl.disabled = true;
+            btnEl.classList.add("btn-active-plan");
+        }
+    }
+}
+
+function setupModalsOutsideClick() {
+    document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
+        backdrop.addEventListener("click", (e) => {
+            if (e.target === backdrop) {
+                closeModal(backdrop.id);
+            }
+        });
+    });
 }
 
 function toggleCustomReason() {
