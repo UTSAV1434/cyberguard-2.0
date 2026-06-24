@@ -1,4 +1,4 @@
-# 🛡️ CyberGuard AI - Intelligent Incident Detection & Automated Containment
+# 🛡️ CyberGuard AI - Intelligent Incident Detection & Automated Containments
 
 **CyberGuard AI** is a state-of-the-art incident detection, automatic threat containment, and security orchestration system. It parses system authentication logs to identify failed logins or brute-force threat vectors in real-time, validates threat actors against external reputation databases, dynamically applies containment policies, syncs logs to a Notion database, and provides a beautiful control room dashboard.
 
